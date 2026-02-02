@@ -38,7 +38,7 @@
 
       {% if product.out_of_stock %}
       <button class="btn btn-secondary" disabled>Out of stock</button>
-      {% else %}
+      {% elif user.is_authenticated %}
       <form method="post" action="{% url 'store:cart_add' product.id %}" class="d-flex align-items-center gap-2 flex-wrap">
         {% csrf_token %}
         <label class="me-2">Quantity:</label>
@@ -46,6 +46,9 @@
         <input type="hidden" name="next" value="{{ request.build_absolute_uri }}">
         <button type="submit" class="btn btn-gold"><i class="bi bi-bag-plus me-1"></i> Add to cart</button>
       </form>
+      {% else %}
+      <p class="text-muted small mb-2">You must be logged in to add to cart and buy.</p>
+      <a href="{% url 'accounts:login' %}?next={{ request.build_absolute_uri|urlencode }}" class="btn btn-gold"><i class="bi bi-box-arrow-in-right me-1"></i> Log in to add to cart</a>
       {% endif %}
     </div>
   </div>

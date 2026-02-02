@@ -1,8 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib.admin.views.decorators import staff_member_required
+from django.urls import reverse
 from .models import Product, Category, Order, OrderItem
 from .cart import cart_items, cart_total, cart_add, cart_remove, cart_update, cart_clear
 from .forms import CheckoutForm
@@ -60,15 +62,17 @@ def product_detail(request, slug):
     })
 
 
+@login_required
 def cart_view(request):
-    """Cart page."""
+    """Cart page. Login required to buy (add to cart, checkout)."""
     items = cart_items(request)
     total = cart_total(request)
     return render(request, 'store/cart.html', {'cart_items': items, 'cart_total': total})
 
 
+@login_required
 def cart_add_view(request, product_id):
-    """Add to cart (POST)."""
+    """Add to cart (POST). Login required to buy."""
     if request.method != 'POST':
         return redirect('store:shop')
     quantity = int(request.POST.get('quantity', 1))
@@ -80,6 +84,7 @@ def cart_add_view(request, product_id):
     return redirect(next_url)
 
 
+@login_required
 def cart_remove_view(request, product_id):
     """Remove from cart."""
     cart_remove(request, product_id)
@@ -87,6 +92,7 @@ def cart_remove_view(request, product_id):
     return redirect('store:cart')
 
 
+@login_required
 def cart_update_view(request, product_id):
     """Update quantity in cart (POST)."""
     if request.method != 'POST':
@@ -97,6 +103,7 @@ def cart_update_view(request, product_id):
     return redirect('store:cart')
 
 
+@login_required
 def checkout(request):
     """Checkout: show form and place order."""
     items = cart_items(request)
@@ -108,9 +115,8 @@ def checkout(request):
         form = CheckoutForm(request.POST)
         if form.is_valid():
             order = form.save(commit=False)
-            if request.user.is_authenticated:
-                order.user = request.user
-                order.email = order.email or request.user.email or request.user.username
+            order.user = request.user
+            order.email = order.email or request.user.email or request.user.username
             order.total = cart_total(request)
             order.save()
             for item in items:
@@ -127,18 +133,14 @@ def checkout(request):
             return redirect('store:order_confirmation', order_id=order.id)
         # form invalid: fall through to render with form errors
     else:
-        initial = {}
-        if request.user.is_authenticated:
-            initial['email'] = request.user.email or ''
-            initial['first_name'] = request.user.first_name or ''
-            initial['last_name'] = request.user.last_name or ''
-            if hasattr(request.user, 'profile') and request.user.profile:
-                p = request.user.profile
-                initial['phone'] = p.phone or ''
-                initial['address'] = p.default_address or ''
-                initial['city'] = p.default_city or ''
-                initial['postal_code'] = p.default_postal_code or ''
-                initial['country'] = p.default_country or ''
+        initial = {
+            'email': request.user.email or '',
+            'first_name': request.user.first_name or '',
+            'last_name': request.user.last_name or '',
+        }
+        if hasattr(request.user, 'profile') and request.user.profile:
+            p = request.user.profile
+            initial.update({'phone': p.phone or '', 'address': p.default_address or '', 'city': p.default_city or '', 'postal_code': p.default_postal_code or '', 'country': p.default_country or ''})
         form = CheckoutForm(initial=initial)
 
     total = cart_total(request)
@@ -146,14 +148,14 @@ def checkout(request):
 
 
 def order_confirmation(request, order_id):
-    """Order confirmation page."""
+    """Order confirmation page. Login required to buy, so only owner or staff can view."""
     order = get_object_or_404(Order, id=order_id)
-    if request.user.is_authenticated and request.user.is_staff:
+    if not request.user.is_authenticated:
+        messages.warning(request, 'Please log in to view your order.')
+        return redirect(reverse('accounts:login') + '?next=' + request.build_absolute_uri())
+    if request.user.is_staff:
         pass  # staff can view any order
-    elif request.user.is_authenticated and order.user != request.user:
-        messages.error(request, 'Order not found.')
-        return redirect('store:home')
-    elif not request.user.is_authenticated and order.user_id:
+    elif order.user != request.user:
         messages.error(request, 'Order not found.')
         return redirect('store:home')
     return render(request, 'store/order_confirmation.html', {'order': order})
