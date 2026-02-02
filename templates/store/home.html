@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<section class="hero rounded-4 py-5 px-4 mb-5 mx-2 mx-md-0">
+  <div class="container text-center py-5">
+    <h1 class="font-serif display-4 fw-bold mb-3">Precious Reflections</h1>
+    <p class="lead mb-4 opacity-90">Accessories for him & her. Timeless style, everyday elegance.</p>
+    <a href="{% url 'store:shop' %}" class="btn btn-gold btn-lg px-4">Shop Now</a>
+  </div>
+</section>
+
+<div class="container">
+  <h2 class="font-serif text-center mb-4">Shop by Category</h2>
+  <div class="row g-4 mb-5">
+    {% for cat in categories %}
+    <div class="col-6 col-md-4">
+      <a href="{% url 'store:shop' %}?category={{ cat.slug }}" class="text-decoration-none text-dark">
+        <div class="card h-100">
+          {% if cat.image %}
+          <img src="{{ cat.image.url }}" class="card-img-top" alt="{{ cat.name }}">
+          {% else %}
+          <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center text-white font-serif fs-4">{{ cat.name }}</div>
+          {% endif %}
+          <div class="card-body text-center">
+            <h5 class="card-title font-serif">{{ cat.name }}</h5>
+          </div>
+        </div>
+      </a>
+    </div>
+    {% empty %}
+    <p class="text-muted">No categories yet.</p>
+    {% endfor %}
+  </div>
+
+  <h2 class="font-serif text-center mb-4">Featured Products</h2>
+  <div class="row g-4 mb-5">
+    {% for product in featured %}
+    <div class="col-6 col-md-3">
+      <div class="card h-100">
+        <a href="{% url 'store:product_detail' product.slug %}">
+          {% if product.image %}
+          <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+          {% else %}
+          <div class="card-img-top bg-light d-flex align-items-center justify-content-center text-muted"><i class="bi bi-image fs-1"></i></div>
+          {% endif %}
+        </a>
+        <div class="card-body d-flex flex-column">
+          <h6 class="card-title"><a href="{% url 'store:product_detail' product.slug %}" class="text-dark text-decoration-none">{{ product.name }}</a></h6>
+          <p class="product-price mb-2">${{ product.price }}</p>
+          <a href="{% url 'store:product_detail' product.slug %}" class="btn btn-gold btn-sm mt-auto">View</a>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <p class="text-muted">No products yet. Check back soon!</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

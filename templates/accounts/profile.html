@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h1 class="font-serif mb-4">My profile</h1>
+  <div class="row">
+    <div class="col-md-4 mb-4">
+      <div class="card">
+        <div class="card-body text-center">
+          {% if profile.avatar %}
+          <img src="{{ profile.avatar.url }}" alt="Avatar" class="rounded-circle mb-2" style="width: 100px; height: 100px; object-fit: cover;">
+          {% else %}
+          <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center text-white mb-2" style="width: 100px; height: 100px;"><i class="bi bi-person display-4"></i></div>
+          {% endif %}
+          <h5 class="mb-0">{{ user.get_full_name|default:user.username }}</h5>
+          <p class="text-muted small mb-0">{{ user.email|default:user.username }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-8">
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Account info</h5>
+          <p class="mb-1"><strong>Username:</strong> {{ user.username }}</p>
+          {% if user.email %}<p class="mb-1"><strong>Email:</strong> {{ user.email }}</p>{% endif %}
+          {% if profile.phone %}<p class="mb-0"><strong>Phone:</strong> {{ profile.phone }}</p>{% endif %}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title d-flex justify-content-between align-items-center">
+            Recent orders
+            <a href="{% url 'accounts:order_history' %}" class="btn btn-gold btn-sm">View all</a>
+          </h5>
+          <ul class="list-group list-group-flush">
+            {% for order in orders %}
+            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+              <span>Order #{{ order.id }} — ${{ order.total }} <span class="badge bg-secondary">{{ order.get_status_display }}</span></span>
+              <span class="text-muted small">{{ order.created_at|date:"M d, Y" }}</span>
+            </li>
+            {% empty %}
+            <li class="list-group-item text-muted px-0">No orders yet.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

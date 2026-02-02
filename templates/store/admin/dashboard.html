@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1 class="font-serif mb-4">Admin Dashboard</h1>
+  <p class="text-muted mb-4">Overview of your store.</p>
+
+  <div class="row g-4 mb-5">
+    <div class="col-md-3">
+      <div class="card border-0 bg-primary text-white">
+        <div class="card-body">
+          <h6 class="text-uppercase opacity-75">Total Orders</h6>
+          <h2 class="mb-0">{{ total_orders }}</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 bg-warning text-dark">
+        <div class="card-body">
+          <h6 class="text-uppercase opacity-75">Pending Orders</h6>
+          <h2 class="mb-0">{{ pending_orders }}</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 bg-info text-white">
+        <div class="card-body">
+          <h6 class="text-uppercase opacity-75">Users</h6>
+          <h2 class="mb-0">{{ total_users }}</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 bg-danger text-white">
+        <div class="card-body">
+          <h6 class="text-uppercase opacity-75">Low Stock</h6>
+          <h2 class="mb-0">{{ low_stock_products }}</h2>
+          {% if out_of_stock %}<small>{{ out_of_stock }} out of stock</small>{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Recent orders</h5>
+          <a href="{% url 'admin:store_order_changelist' %}" class="btn btn-gold btn-sm">View all in Admin</a>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Email</th>
+                  <th>Name</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for order in recent_orders %}
+                <tr>
+                  <td>{{ order.id }}</td>
+                  <td>{{ order.email }}</td>
+                  <td>{{ order.first_name }} {{ order.last_name }}</td>
+                  <td>${{ order.total }}</td>
+                  <td><span class="badge bg-secondary">{{ order.get_status_display }}</span></td>
+                  <td>{{ order.created_at|date:"M d, Y" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-muted">No orders yet.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-4">
+    <a href="{% url 'admin:index' %}" class="btn btn-gold">Open Django Admin</a>
+    <a href="{% url 'admin:store_product_changelist' %}" class="btn btn-outline-secondary">Products</a>
+    <a href="{% url 'admin:store_category_changelist' %}" class="btn btn-outline-secondary">Categories</a>
+    <a href="{% url 'admin:auth_user_changelist' %}" class="btn btn-outline-secondary">Users</a>
+  </div>
+</div>
+{% endblock %}

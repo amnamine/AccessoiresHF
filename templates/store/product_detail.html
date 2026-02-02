@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <nav class="mb-3">
+    <a href="{% url 'store:shop' %}" class="text-muted text-decoration-none">Shop</a>
+    <span class="text-muted mx-2">/</span>
+    <span>{{ product.name }}</span>
+  </nav>
+
+  <div class="row">
+    <div class="col-md-6 mb-4">
+      {% if product.image %}
+      <img src="{{ product.image.url }}" class="img-fluid rounded-3 shadow" alt="{{ product.name }}">
+      {% else %}
+      <div class="bg-light rounded-3 d-flex align-items-center justify-content-center text-muted" style="height: 400px;"><i class="bi bi-image display-4"></i></div>
+      {% endif %}
+      {% if product.images.all %}
+      <div class="d-flex gap-2 mt-2">
+        {% for img in product.images.all %}
+        <img src="{{ img.image.url }}" alt="{{ img.alt_text|default:product.name }}" class="rounded" style="width: 70px; height: 70px; object-fit: cover;">
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    <div class="col-md-6">
+      <span class="badge bg-secondary">{{ product.get_gender_display }}</span>
+      <span class="badge bg-light text-dark">{{ product.category.name }}</span>
+      <h1 class="font-serif mt-2 mb-3">{{ product.name }}</h1>
+      <p class="product-price fs-3 mb-3">${{ product.price }}</p>
+      <p class="text-muted">{{ product.description }}</p>
+      <p class="small text-muted">In stock: {{ product.stock }}</p>
+
+      {% if product.out_of_stock %}
+      <button class="btn btn-secondary" disabled>Out of stock</button>
+      {% else %}
+      <form method="post" action="{% url 'store:cart_add' product.id %}" class="d-flex align-items-center gap-2 flex-wrap">
+        {% csrf_token %}
+        <label class="me-2">Quantity:</label>
+        <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="form-control" style="width: 80px;">
+        <input type="hidden" name="next" value="{{ request.build_absolute_uri }}">
+        <button type="submit" class="btn btn-gold"><i class="bi bi-bag-plus me-1"></i> Add to cart</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if related %}
+  <hr class="my-5">
+  <h3 class="font-serif mb-3">You may also like</h3>
+  <div class="row g-3">
+    {% for p in related %}
+    <div class="col-6 col-md-3">
+      <div class="card h-100">
+        <a href="{% url 'store:product_detail' p.slug %}">
+          {% if p.image %}
+          <img src="{{ p.image.url }}" class="card-img-top" alt="{{ p.name }}">
+          {% else %}
+          <div class="card-img-top bg-light d-flex align-items-center justify-content-center text-muted"><i class="bi bi-image"></i></div>
+          {% endif %}
+        </a>
+        <div class="card-body">
+          <h6><a href="{% url 'store:product_detail' p.slug %}" class="text-dark text-decoration-none">{{ p.name }}</a></h6>
+          <p class="product-price mb-0">${{ p.price }}</p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

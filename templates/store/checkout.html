@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1 class="font-serif mb-4">Checkout</h1>
+
+  <div class="row">
+    <div class="col-lg-7 mb-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Shipping information</h5>
+          <form method="post">
+            {% csrf_token %}
+            <div class="row g-2">
+              <div class="col-md-6 mb-2"><label class="form-label">{{ form.email.label }}</label>{{ form.email }}</div>
+              <div class="col-md-6 mb-2"><label class="form-label">{{ form.phone.label }}</label>{{ form.phone }}</div>
+              <div class="col-md-6 mb-2"><label class="form-label">{{ form.first_name.label }}</label>{{ form.first_name }}</div>
+              <div class="col-md-6 mb-2"><label class="form-label">{{ form.last_name.label }}</label>{{ form.last_name }}</div>
+              <div class="col-12 mb-2"><label class="form-label">{{ form.address.label }}</label>{{ form.address }}</div>
+              <div class="col-md-4 mb-2"><label class="form-label">{{ form.city.label }}</label>{{ form.city }}</div>
+              <div class="col-md-4 mb-2"><label class="form-label">{{ form.postal_code.label }}</label>{{ form.postal_code }}</div>
+              <div class="col-md-4 mb-2"><label class="form-label">{{ form.country.label }}</label>{{ form.country }}</div>
+            </div>
+            {% if form.errors %}
+            <div class="text-danger small mt-2">
+              {% for field in form %}{{ field.errors }}{% endfor %}
+            </div>
+            {% endif %}
+            <button type="submit" class="btn btn-gold mt-3 w-100">Place order</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Order summary</h5>
+          <ul class="list-group list-group-flush">
+            {% for item in cart_items %}
+            <li class="list-group-item d-flex justify-content-between px-0">
+              <span>{{ item.product.name }} × {{ item.quantity }}</span>
+              <span>${{ item.subtotal }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+          <hr>
+          <p class="d-flex justify-content-between mb-0"><strong>Total</strong><strong class="product-price">${{ cart_total }}</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
