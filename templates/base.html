@@ -60,6 +60,8 @@
           {% if user.is_authenticated %}
             <li class="nav-item"><a class="nav-link" href="{% url 'accounts:profile' %}"><i class="bi bi-person"></i> Profile</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'accounts:order_history' %}">Orders</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'store:my_listings' %}"><i class="bi bi-shop me-1"></i> My Listings</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'store:my_sales' %}">My Sales</a></li>
             {% if user.is_staff %}
             <li class="nav-item"><a class="nav-link" href="{% url 'store:admin_dashboard' %}">Dashboard</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'admin:index' %}">Admin</a></li>

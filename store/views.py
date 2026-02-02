@@ -5,9 +5,10 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib.admin.views.decorators import staff_member_required
 from django.urls import reverse
+from django.utils.text import slugify
 from .models import Product, Category, Order, OrderItem
 from .cart import cart_items, cart_total, cart_add, cart_remove, cart_update, cart_clear
-from .forms import CheckoutForm
+from .forms import CheckoutForm, ProductForm
 
 
 def home(request):
@@ -72,9 +73,17 @@ def cart_view(request):
 
 @login_required
 def cart_add_view(request, product_id):
-    """Add to cart (POST). Login required to buy."""
+    """Add to cart (POST). Login required to buy. Cannot add your own listing."""
     if request.method != 'POST':
         return redirect('store:shop')
+    try:
+        product = Product.objects.get(pk=product_id, is_active=True)
+        if product.seller == request.user:
+            messages.error(request, "You cannot buy your own listing.")
+            next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or request.build_absolute_uri('/shop/')
+            return redirect(next_url)
+    except Product.DoesNotExist:
+        pass
     quantity = int(request.POST.get('quantity', 1))
     if cart_add(request, product_id, quantity):
         messages.success(request, 'Item added to cart.')
@@ -123,6 +132,7 @@ def checkout(request):
                 OrderItem.objects.create(
                     order=order,
                     product=item['product'],
+                    seller=item['product'].seller,
                     quantity=item['quantity'],
                     price=item['price'],
                 )
@@ -147,15 +157,89 @@ def checkout(request):
     return render(request, 'store/checkout.html', {'form': form, 'cart_items': items, 'cart_total': total})
 
 
+# --- Seller: my listings, add/edit/delete, my sales ---
+
+@login_required
+def my_listings(request):
+    """List products the current user is selling."""
+    products = Product.objects.filter(seller=request.user).order_by('-created_at')
+    return render(request, 'store/seller/my_listings.html', {'products': products})
+
+
+@login_required
+def add_listing(request):
+    """Create a new listing (product) for the current user."""
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.seller = request.user
+            base_slug = slugify(product.name)[:180] or 'item'
+            slug = base_slug
+            n = 0
+            while Product.objects.filter(slug=slug).exists():
+                n += 1
+                slug = f'{base_slug}-{n}'
+            product.slug = slug
+            product.save()
+            messages.success(request, 'Listing created.')
+            return redirect('store:my_listings')
+    else:
+        form = ProductForm()
+    return render(request, 'store/seller/add_listing.html', {'form': form})
+
+
+@login_required
+def edit_listing(request, pk):
+    """Edit a listing. Only owner or staff."""
+    product = get_object_or_404(Product, pk=pk)
+    if product.seller != request.user and not request.user.is_staff:
+        messages.error(request, 'You cannot edit this listing.')
+        return redirect('store:my_listings')
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Listing updated.')
+            return redirect('store:my_listings')
+    else:
+        form = ProductForm(instance=product)
+    return render(request, 'store/seller/edit_listing.html', {'form': form, 'product': product})
+
+
+@login_required
+def delete_listing(request, pk):
+    """Delete a listing. Only owner or staff."""
+    product = get_object_or_404(Product, pk=pk)
+    if product.seller != request.user and not request.user.is_staff:
+        messages.error(request, 'You cannot delete this listing.')
+        return redirect('store:my_listings')
+    if request.method == 'POST':
+        product.delete()
+        messages.success(request, 'Listing deleted.')
+        return redirect('store:my_listings')
+    return render(request, 'store/seller/delete_listing_confirm.html', {'product': product})
+
+
+@login_required
+def my_sales(request):
+    """List order items the current user sold (seller side)."""
+    items = OrderItem.objects.filter(seller=request.user).select_related('order', 'product').order_by('-order__created_at')
+    return render(request, 'store/seller/my_sales.html', {'sold_items': items})
+
+
 def order_confirmation(request, order_id):
-    """Order confirmation page. Login required to buy, so only owner or staff can view."""
+    """Order confirmation page. Viewable by buyer (order.user), staff, or any seller in this order."""
     order = get_object_or_404(Order, id=order_id)
     if not request.user.is_authenticated:
         messages.warning(request, 'Please log in to view your order.')
         return redirect(reverse('accounts:login') + '?next=' + request.build_absolute_uri())
-    if request.user.is_staff:
-        pass  # staff can view any order
-    elif order.user != request.user:
+    can_view = (
+        request.user.is_staff
+        or order.user == request.user
+        or order.items.filter(seller=request.user).exists()
+    )
+    if not can_view:
         messages.error(request, 'Order not found.')
         return redirect('store:home')
     return render(request, 'store/order_confirmation.html', {'order': order})

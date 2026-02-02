@@ -16,4 +16,10 @@ urlpatterns = [
     path('checkout/', views.checkout, name='checkout'),
     path('order/<int:order_id>/confirmation/', views.order_confirmation, name='order_confirmation'),
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    # Seller: my listings, add/edit/delete, my sales
+    path('my-listings/', views.my_listings, name='my_listings'),
+    path('my-listings/add/', views.add_listing, name='add_listing'),
+    path('my-listings/<int:pk>/edit/', views.edit_listing, name='edit_listing'),
+    path('my-listings/<int:pk>/delete/', views.delete_listing, name='delete_listing'),
+    path('my-sales/', views.my_sales, name='my_sales'),
 ]

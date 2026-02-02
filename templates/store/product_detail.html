@@ -31,6 +31,7 @@
     <div class="col-md-6">
       <span class="badge {% if product.gender == 'M' %}bg-primary{% elif product.gender == 'F' %}bg-danger{% else %}bg-secondary{% endif %}">{{ product.get_gender_display }}</span>
       <span class="badge bg-light text-dark">{{ product.category.name }}</span>
+      {% if product.seller %}<p class="small text-muted mb-0">Sold by <strong>{{ product.seller.username }}</strong></p>{% else %}<p class="small text-muted mb-0">Sold by <strong>Precious Reflections</strong></p>{% endif %}
       <h1 class="font-serif mt-2 mb-3">{{ product.name }}</h1>
       <p class="product-price fs-3 mb-3">${{ product.price }}</p>
       <p class="text-muted">{{ product.description }}</p>
@@ -38,6 +39,9 @@
 
       {% if product.out_of_stock %}
       <button class="btn btn-secondary" disabled>Out of stock</button>
+      {% elif user.is_authenticated and product.seller == user %}
+      <p class="text-muted small mb-2">This is your listing.</p>
+      <a href="{% url 'store:edit_listing' product.pk %}" class="btn btn-outline-secondary">Edit listing</a>
       {% elif user.is_authenticated %}
       <form method="post" action="{% url 'store:cart_add' product.id %}" class="d-flex align-items-center gap-2 flex-wrap">
         {% csrf_token %}

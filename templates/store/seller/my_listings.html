@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Listings{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="font-serif mb-0">My Listings</h1>
+    <a href="{% url 'store:add_listing' %}" class="btn btn-gold"><i class="bi bi-plus-lg me-1"></i> Add listing</a>
+  </div>
+  <p class="text-muted">Products you are selling. Other users can buy them from the shop.</p>
+
+  {% if products %}
+  <div class="row g-4">
+    {% for product in products %}
+    <div class="col-6 col-md-4 col-lg-3">
+      <div class="card h-100">
+        <a href="{% url 'store:product_detail' product.slug %}">
+          {% if product.image %}
+          <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+          {% else %}
+          <div class="card-img-top bg-light d-flex align-items-center justify-content-center text-muted" style="height: 180px;"><i class="bi bi-image fs-1"></i></div>
+          {% endif %}
+        </a>
+        <div class="card-body d-flex flex-column">
+          <h6 class="card-title"><a href="{% url 'store:product_detail' product.slug %}" class="text-dark text-decoration-none">{{ product.name }}</a></h6>
+          <p class="product-price mb-2">${{ product.price }}</p>
+          <p class="small text-muted mb-2">Stock: {{ product.stock }} · {{ product.get_gender_display }}</p>
+          <div class="mt-auto d-flex gap-2">
+            <a href="{% url 'store:edit_listing' product.pk %}" class="btn btn-outline-secondary btn-sm flex-grow-1">Edit</a>
+            <a href="{% url 'store:delete_listing' product.pk %}" class="btn btn-outline-danger btn-sm">Delete</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-5">
+    <i class="bi bi-shop display-4 text-muted"></i>
+    <p class="mt-3 text-muted">You have no listings yet.</p>
+    <a href="{% url 'store:add_listing' %}" class="btn btn-gold">Add your first listing</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

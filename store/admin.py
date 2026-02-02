@@ -16,12 +16,13 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['name', 'category', 'gender', 'price', 'stock', 'is_active', 'created_at']
+    list_display = ['name', 'seller', 'category', 'gender', 'price', 'stock', 'is_active', 'created_at']
     list_filter = ['category', 'gender', 'is_active']
     search_fields = ['name', 'description']
     prepopulated_fields = {'slug': ('name',)}
     inlines = [ProductImageInline]
     list_editable = ['stock', 'is_active']
+    raw_id_fields = ['seller']
 
 
 class OrderItemInline(admin.TabularInline):
