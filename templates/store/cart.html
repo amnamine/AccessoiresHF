@@ -23,6 +23,7 @@
                 {% endif %}
               </div>
               <div class="flex-grow-1">
+                <span class="badge {% if item.product.gender == 'M' %}bg-primary{% elif item.product.gender == 'F' %}bg-danger{% else %}bg-secondary{% endif %} me-1">{{ item.product.get_gender_display }}</span>
                 <a href="{% url 'store:product_detail' item.product.slug %}" class="fw-bold text-dark text-decoration-none">{{ item.product.name }}</a>
                 <p class="product-price mb-0">${{ item.price }} each</p>
               </div>
@@ -52,7 +53,11 @@
           <hr>
           <p class="d-flex justify-content-between mb-3"><span>Total</span><strong class="product-price">${{ cart_total }}</strong></p>
           <a href="{% url 'store:checkout' %}" class="btn btn-gold w-100">Proceed to checkout</a>
-          <a href="{% url 'store:shop' %}" class="btn btn-outline-secondary w-100 mt-2">Continue shopping</a>
+          <div class="d-flex gap-2 mt-2">
+            <a href="{% url 'store:shop_men' %}" class="btn btn-outline-primary btn-sm flex-grow-1">Men's</a>
+            <a href="{% url 'store:shop_women' %}" class="btn btn-outline-danger btn-sm flex-grow-1">Women's</a>
+            <a href="{% url 'store:shop' %}" class="btn btn-outline-secondary btn-sm flex-grow-1">Shop All</a>
+          </div>
         </div>
       </div>
     </div>

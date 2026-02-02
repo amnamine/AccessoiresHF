@@ -9,20 +9,24 @@ from .forms import CheckoutForm
 
 
 def home(request):
-    """Home page with featured products."""
-    featured = Product.objects.filter(is_active=True)[:8]
+    """Home page with featured products split by Men / Women."""
     categories = Category.objects.all()[:6]
+    featured_men = Product.objects.filter(is_active=True, gender='M')[:8]
+    featured_women = Product.objects.filter(is_active=True, gender='F')[:8]
+    featured_unisex = Product.objects.filter(is_active=True, gender='U')[:4]
     return render(request, 'store/home.html', {
-        'featured': featured,
         'categories': categories,
+        'featured_men': featured_men,
+        'featured_women': featured_women,
+        'featured_unisex': featured_unisex,
     })
 
 
-def shop(request):
-    """Shop listing with category and gender filters."""
+def shop(request, gender=None):
+    """Shop listing with category and gender filters. gender can come from URL (Men/Women) or GET."""
     qs = Product.objects.filter(is_active=True)
     category_slug = request.GET.get('category')
-    gender = request.GET.get('gender')
+    gender = gender or request.GET.get('gender')
     q = request.GET.get('q', '').strip()
 
     if category_slug:

@@ -8,7 +8,11 @@
   <div class="container text-center py-5">
     <h1 class="font-serif display-4 fw-bold mb-3">Precious Reflections</h1>
     <p class="lead mb-4 opacity-90">Accessories for him & her. Timeless style, everyday elegance.</p>
-    <a href="{% url 'store:shop' %}" class="btn btn-gold btn-lg px-4">Shop Now</a>
+    <div class="d-flex flex-wrap justify-content-center gap-3">
+      <a href="{% url 'store:shop_men' %}" class="btn btn-gold btn-lg px-4"><i class="bi bi-gender-male me-2"></i>Men's</a>
+      <a href="{% url 'store:shop_women' %}" class="btn btn-outline-light btn-lg px-4"><i class="bi bi-gender-female me-2"></i>Women's</a>
+      <a href="{% url 'store:shop' %}" class="btn btn-outline-light btn-lg px-4">Shop All</a>
+    </div>
   </div>
 </section>
 
@@ -35,28 +39,97 @@
     {% endfor %}
   </div>
 
-  <h2 class="font-serif text-center mb-4">Featured Products</h2>
-  <div class="row g-4 mb-5">
-    {% for product in featured %}
-    <div class="col-6 col-md-3">
-      <div class="card h-100">
-        <a href="{% url 'store:product_detail' product.slug %}">
-          {% if product.image %}
-          <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
-          {% else %}
-          <div class="card-img-top bg-light d-flex align-items-center justify-content-center text-muted"><i class="bi bi-image fs-1"></i></div>
-          {% endif %}
-        </a>
-        <div class="card-body d-flex flex-column">
-          <h6 class="card-title"><a href="{% url 'store:product_detail' product.slug %}" class="text-dark text-decoration-none">{{ product.name }}</a></h6>
-          <p class="product-price mb-2">${{ product.price }}</p>
-          <a href="{% url 'store:product_detail' product.slug %}" class="btn btn-gold btn-sm mt-auto">View</a>
+  <!-- Men's Accessories -->
+  <div class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="font-serif mb-0"><i class="bi bi-gender-male text-primary me-2"></i>Men's Accessories</h2>
+      <a href="{% url 'store:shop_men' %}" class="btn btn-gold btn-sm">View all</a>
+    </div>
+    <div class="row g-4">
+      {% for product in featured_men %}
+      <div class="col-6 col-md-3">
+        <div class="card h-100">
+          <a href="{% url 'store:product_detail' product.slug %}">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+            {% else %}
+            <div class="card-img-top bg-light d-flex align-items-center justify-content-center text-muted"><i class="bi bi-image fs-1"></i></div>
+            {% endif %}
+          </a>
+          <div class="card-body d-flex flex-column">
+            <span class="badge bg-primary mb-1">Men</span>
+            <h6 class="card-title"><a href="{% url 'store:product_detail' product.slug %}" class="text-dark text-decoration-none">{{ product.name }}</a></h6>
+            <p class="product-price mb-2">${{ product.price }}</p>
+            <a href="{% url 'store:product_detail' product.slug %}" class="btn btn-gold btn-sm mt-auto">View</a>
+          </div>
         </div>
       </div>
+      {% empty %}
+      <div class="col-12"><p class="text-muted">No men's products yet.</p></div>
+      {% endfor %}
     </div>
-    {% empty %}
-    <p class="text-muted">No products yet. Check back soon!</p>
-    {% endfor %}
   </div>
+
+  <!-- Women's Accessories -->
+  <div class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="font-serif mb-0"><i class="bi bi-gender-female text-danger me-2"></i>Women's Accessories</h2>
+      <a href="{% url 'store:shop_women' %}" class="btn btn-gold btn-sm">View all</a>
+    </div>
+    <div class="row g-4">
+      {% for product in featured_women %}
+      <div class="col-6 col-md-3">
+        <div class="card h-100">
+          <a href="{% url 'store:product_detail' product.slug %}">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+            {% else %}
+            <div class="card-img-top bg-light d-flex align-items-center justify-content-center text-muted"><i class="bi bi-image fs-1"></i></div>
+            {% endif %}
+          </a>
+          <div class="card-body d-flex flex-column">
+            <span class="badge bg-danger mb-1">Women</span>
+            <h6 class="card-title"><a href="{% url 'store:product_detail' product.slug %}" class="text-dark text-decoration-none">{{ product.name }}</a></h6>
+            <p class="product-price mb-2">${{ product.price }}</p>
+            <a href="{% url 'store:product_detail' product.slug %}" class="btn btn-gold btn-sm mt-auto">View</a>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12"><p class="text-muted">No women's products yet.</p></div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Unisex (optional, if any) -->
+  {% if featured_unisex %}
+  <div class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="font-serif mb-0"><i class="bi bi-people me-2"></i>Unisex</h2>
+      <a href="{% url 'store:shop' %}?gender=U" class="btn btn-gold btn-sm">View all</a>
+    </div>
+    <div class="row g-4">
+      {% for product in featured_unisex %}
+      <div class="col-6 col-md-3">
+        <div class="card h-100">
+          <a href="{% url 'store:product_detail' product.slug %}">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+            {% else %}
+            <div class="card-img-top bg-light d-flex align-items-center justify-content-center text-muted"><i class="bi bi-image fs-1"></i></div>
+            {% endif %}
+          </a>
+          <div class="card-body d-flex flex-column">
+            <span class="badge bg-secondary mb-1">Unisex</span>
+            <h6 class="card-title"><a href="{% url 'store:product_detail' product.slug %}" class="text-dark text-decoration-none">{{ product.name }}</a></h6>
+            <p class="product-price mb-2">${{ product.price }}</p>
+            <a href="{% url 'store:product_detail' product.slug %}" class="btn btn-gold btn-sm mt-auto">View</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}

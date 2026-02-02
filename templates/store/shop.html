@@ -1,17 +1,39 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Shop{% endblock %}
+{% block title %}{% if selected_gender == 'M' %}Men's Accessories{% elif selected_gender == 'F' %}Women's Accessories{% elif selected_gender == 'U' %}Unisex{% else %}Shop{% endif %}{% endblock %}
 
 {% block content %}
 <div class="container">
-  <h1 class="font-serif mb-4">Shop</h1>
+  <h1 class="font-serif mb-4">
+    {% if selected_gender == 'M' %}<i class="bi bi-gender-male text-primary me-2"></i>Men's Accessories
+    {% elif selected_gender == 'F' %}<i class="bi bi-gender-female text-danger me-2"></i>Women's Accessories
+    {% elif selected_gender == 'U' %}<i class="bi bi-people me-2"></i>Unisex
+    {% else %}Shop All{% endif %}
+  </h1>
+
+  <!-- Gender tabs: always visible, clear separation -->
+  <ul class="nav nav-pills nav-fill mb-4 gap-2 flex-wrap">
+    <li class="nav-item">
+      <a class="nav-link {% if not selected_gender %}active bg-dark{% endif %} rounded-pill" href="{% url 'store:shop' %}">All</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if selected_gender == 'M' %}active bg-primary{% endif %} rounded-pill" href="{% url 'store:shop_men' %}{% if selected_category %}?category={{ selected_category }}{% endif %}{% if search_q %}{% if selected_category %}&{% else %}?{% endif %}q={{ search_q }}{% endif %}"><i class="bi bi-gender-male me-1"></i> Men</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if selected_gender == 'F' %}active bg-danger{% endif %} rounded-pill" href="{% url 'store:shop_women' %}{% if selected_category %}?category={{ selected_category }}{% endif %}{% if search_q %}{% if selected_category %}&{% else %}?{% endif %}q={{ search_q }}{% endif %}"><i class="bi bi-gender-female me-1"></i> Women</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if selected_gender == 'U' %}active bg-secondary{% endif %} rounded-pill" href="{% url 'store:shop' %}?gender=U{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_q %}&q={{ search_q }}{% endif %}">Unisex</a>
+    </li>
+  </ul>
 
   <div class="row">
     <aside class="col-lg-3 mb-4">
       <div class="card p-3">
         <h6 class="text-uppercase text-muted mb-3">Filters</h6>
         <form method="get" class="mb-3">
+          {% if selected_gender %}<input type="hidden" name="gender" value="{{ selected_gender }}">{% endif %}
           <input type="text" name="q" class="form-control mb-2" placeholder="Search..." value="{{ search_q|default:'' }}">
           <label class="form-label small">Category</label>
           <select name="category" class="form-select mb-2">
@@ -45,7 +67,7 @@
               {% endif %}
             </a>
             <div class="card-body d-flex flex-column">
-              <span class="badge bg-secondary mb-1">{{ product.get_gender_display }}</span>
+              <span class="badge {% if product.gender == 'M' %}bg-primary{% elif product.gender == 'F' %}bg-danger{% else %}bg-secondary{% endif %} mb-1">{{ product.get_gender_display }}</span>
               <h6 class="card-title"><a href="{% url 'store:product_detail' product.slug %}" class="text-dark text-decoration-none">{{ product.name }}</a></h6>
               <p class="product-price mb-2">${{ product.price }}</p>
               {% if product.out_of_stock %}
